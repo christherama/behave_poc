@@ -2,11 +2,13 @@ from api.models import User
 
 
 class UserService:
-    @classmethod
-    def find(cls, email=None):
-        user = User.objects.filter(email=email)
-        if user.exists():
-            return user.last()
+    def __init__(self, user_model=User):
+        self.user_model = user_model
+
+    def find(self, email=None):
+        user = self.user_model.objects.get(email=email)
+        if user:
+            return user
         else:
             raise UserNotFoundException()
 

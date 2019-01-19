@@ -1,15 +1,18 @@
 from behave import *
+from mock import patch
 
 from api.models import User
 from api.services import UserService, UserNotFoundException
 
 
 @given("a user exists with a specified email address")
-def step_impl(context):
+@patch('api.models.User')
+def step_impl(context, mock_user_model):
     """
     :type context: behave.runner.Context
     """
-    User.objects.create(email='exists@email.com')
+    context.service = UserService(user_model=mock_user_model)
+    mock_user_model.objects.get.return_value = User(email='exists@email.com')
 
 
 @when("the UserService is called to retrieve that user")
@@ -17,7 +20,7 @@ def step_impl(context):
     """
     :type context: behave.runner.Context
     """
-    context.user = UserService.find(email='exists@email.com')
+    context.user = context.service.find(email='exists@email.com')
 
 
 @then("the service successfully retrieves that user")
