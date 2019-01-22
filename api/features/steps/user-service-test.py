@@ -32,11 +32,13 @@ def step_impl(context):
 
 
 @given("a user with a specified email address does not exist")
-def step_impl(context):
+@patch('api.models.User')
+def step_impl(context, mock_user_model):
     """
     :type context: behave.runner.Context
     """
-    pass
+    mock_user_model.objects.get.side_effect = User.DoesNotExist()
+    context.service = UserService(user_model=mock_user_model)
 
 
 @when("the UserService is called to retrieve the user with that email address")
@@ -45,7 +47,7 @@ def step_impl(context):
     :type context: behave.runner.Context
     """
     try:
-        context.user = UserService.find(email='doesnotexist@email.com')
+        context.service.find(email='doesnotexist@email.com')
         context.exception = None
     except Exception, e:
         context.exception = e

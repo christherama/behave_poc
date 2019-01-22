@@ -6,11 +6,12 @@ class UserService:
         self.user_model = user_model
 
     def find(self, email=None):
-        user = self.user_model.objects.get(email=email)
-        if user:
-            return user
-        else:
+        try:
+            user = self.user_model.objects.get(email=email)
+        except User.DoesNotExist:
             raise UserNotFoundException()
+        else:
+            return user
 
 
 class UserNotFoundException(Exception):
