@@ -1,14 +1,19 @@
-from django.shortcuts import get_object_or_404
+from django.http import Http404
 from rest_framework import generics
 from rest_framework.response import Response
 
 from api import serializers
-from api.models import User
+from api.services import UserService, UserNotFoundException
 
 
 class UserExistsView(generics.RetrieveAPIView):
     serializer_class = serializers.UserExistsSerializer
+    user_service = UserService()
 
     def retrieve(self, request, *args, **kwargs):
-        user = get_object_or_404(User, email=request.GET.get('email').lower())
-        return Response(self.get_serializer(user).data)
+        try:
+            user = self.user_service.find(email=request.GET.get('email').lower())
+        except UserNotFoundException:
+            raise Http404()
+        else:
+            return Response(self.get_serializer(user).data)
