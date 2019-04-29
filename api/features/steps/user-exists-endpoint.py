@@ -1,9 +1,7 @@
-from behave import *
-from mock import patch
-
 from api.models import User
-from api.services import UserNotFoundException
-from api.views import UserExistsView
+from api.services import UserNotFoundException, UserService
+from behave import *
+from behave.model import AutoMock
 
 
 @given("a user exists with email {email}")
@@ -12,12 +10,12 @@ def step_impl(context, email):
     :type context: behave.runner.Context
     :type email: str
     """
-    with patch("api.services.UserService") as mock_user_service:
-        mock_user_service.find.return_value = User(email=email)
-        UserExistsView.user_service = mock_user_service
+    context.mocks = [
+        AutoMock(spec=UserService, target="api.views.UserService", find__return_value=User(email=email))
+    ]
 
 
-@when("a API request is made to {url}")
+@when("an API request is made to GET {url}")
 def step_impl(context, url):
     """
     :type context: behave.runner.Context
@@ -40,17 +38,9 @@ def step_impl(context):
     """
     :type context: behave.runner.Context
     """
-    with patch("api.services.UserService") as mock_user_service:
-        mock_user_service.find.side_effect = UserNotFoundException()
-        UserExistsView.user_service = mock_user_service
-
-
-@when("a GET request is made to `/api/users/exists?email=doesnotexist@email.com`")
-def step_impl(context):
-    """
-    :type context: behave.runner.Context
-    """
-    context.response = context.test.client.get("/api/users/exists?email=doesnotexist@email.com")
+    context.mocks = [
+        AutoMock(spec=UserService, target="api.views.UserService", find__side_effect=UserNotFoundException())
+    ]
 
 
 @then("the response status is `404`")
@@ -59,3 +49,11 @@ def step_impl(context):
     :type context: behave.runner.Context
     """
     context.test.assertEquals(context.response.status_code, 404)
+
+
+@then("the UserService is called to retrieve that user")
+def step_impl(context):
+    """
+    :type context: behave.runner.Context
+    """
+    context.mocks.get(UserService).find.assert_called_once()

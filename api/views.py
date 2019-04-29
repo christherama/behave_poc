@@ -8,11 +8,10 @@ from api.services import UserService, UserNotFoundException
 
 class UserExistsView(generics.RetrieveAPIView):
     serializer_class = serializers.UserExistsSerializer
-    user_service = UserService()
 
     def retrieve(self, request, *args, **kwargs):
         try:
-            user = self.user_service.find(email=request.GET.get('email').lower())
+            user = UserService.find(email=request.GET.get('email').lower())
         except UserNotFoundException:
             raise Http404()
         else:
