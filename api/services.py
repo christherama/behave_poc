@@ -11,5 +11,5 @@ class UserService:
             raise UserNotFoundException()
 
 
-class UserNotFoundException(Exception):
+class UserNotFoundException(BaseException):
     pass

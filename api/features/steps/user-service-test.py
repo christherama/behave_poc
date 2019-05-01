@@ -1,18 +1,17 @@
 from behave import *
-from mock import patch
+from behave.model import AutoMock
 
 from api.models import User
 from api.services import UserService, UserNotFoundException
 
 
 @given("a user exists with a specified email address")
-@patch('api.models.User')
-def step_impl(context, mock_user_model):
+def step_impl(context):
     """
     :type context: behave.runner.Context
     """
-    context.service = UserService(user_model=mock_user_model)
-    mock_user_model.objects.get.return_value = User(email='exists@email.com')
+    context.mocks = AutoMock(spec=User, target="api.services.User",
+                             return_values={"objects.get": User(email='exists@email.com')})
 
 
 @when("the UserService is called to retrieve that user")
@@ -20,7 +19,7 @@ def step_impl(context):
     """
     :type context: behave.runner.Context
     """
-    context.user = context.service.find(email='exists@email.com')
+    context.user = UserService.find(email='exists@email.com')
 
 
 @then("the service successfully retrieves that user")
@@ -32,13 +31,12 @@ def step_impl(context):
 
 
 @given("a user with a specified email address does not exist")
-@patch('api.models.User')
-def step_impl(context, mock_user_model):
+def step_impl(context):
     """
     :type context: behave.runner.Context
     """
-    mock_user_model.objects.get.side_effect = User.DoesNotExist()
-    context.service = UserService(user_model=mock_user_model)
+    context.mocks = AutoMock(spec=User, target="api.services.User", return_values={"DoesNotExist": User.DoesNotExist},
+                             side_effects={"objects.get": User.DoesNotExist()})
 
 
 @when("the UserService is called to retrieve the user with that email address")
@@ -47,9 +45,9 @@ def step_impl(context):
     :type context: behave.runner.Context
     """
     try:
-        context.service.find(email='doesnotexist@email.com')
+        UserService.find(email='doesnotexist@email.com')
         context.exception = None
-    except Exception, e:
+    except Exception as e:
         context.exception = e
 
 

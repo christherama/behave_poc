@@ -14,7 +14,6 @@ Feature: Endpoint for checking whether or not a user exists
     | exists@email.com | /api/users/exists?email=exists@email.com | 200 |
     | exists@email.com | /api/users/exists?email=EXISTS@email.com | 200 |
 
-  @wip
   Scenario: User does not exist
     Given a user does not exist with email `doesnotexist@email.com`
      When an API request is made to GET /api/users/exists?email=doesnotexist@email.com

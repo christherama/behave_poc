@@ -5,6 +5,7 @@ Feature: User service abstracts interactions with persistence layer
      When the UserService is called to retrieve that user
      Then the service successfully retrieves that user
 
+  @wip
   Scenario: Attempt to retrieve non-existent user raises exception
     Given a user with a specified email address does not exist
      When the UserService is called to retrieve the user with that email address

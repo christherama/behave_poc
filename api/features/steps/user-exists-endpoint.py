@@ -1,7 +1,8 @@
+from behave.model import AutoMock
+
 from api.models import User
 from api.services import UserNotFoundException, UserService
 from behave import *
-from behave.model import AutoMock
 
 
 @given("a user exists with email {email}")
